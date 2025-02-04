@@ -1,0 +1,134 @@
+<script>
+import Navbar from '@/components/Navbar.vue';
+import { onMounted, reactive } from 'vue';
+import axios from 'axios';
+
+export default {
+    components: { Navbar },
+    props: {
+        title: {
+            type: String,
+            default: 'Checkout Form'
+        }
+    },
+    data() {
+        return {
+            jsonData: {},
+            pendingTransactionsURL: 'http://localhost:5000/api/transactions/pending',
+            issuers: ['OK', 'Pick n Pay', 'Food Lovers', 'Choppies', 'Spar'],
+            checkoutForm: reactive({
+                amountPaid: null,
+                subtotal: null,
+                issuedBy: 'OK'
+            })
+        }
+    },
+    methods: {
+        async processPayment() {
+            const _processTransactionURL = 'http://localhost:5000/api/transactions/process'
+            // console.log(this.jsonData)
+            const _uuid = this.jsonData[0]['transaction_uuid']
+            const _oldBalance = this.jsonData[0]['balance']
+            const _creditDebit = this.jsonData[0]['creditDebit']
+            const _request = {
+                uuid: _uuid,
+                creditDebit: _creditDebit,
+                oldBalance: _oldBalance,
+                amount: (parseFloat(this.checkoutForm.amountPaid) - parseFloat(this.checkoutForm.subtotal)).toFixed(2),
+                issuedBy: this.checkoutForm.issuedBy
+            }
+            // console.log(_request)
+
+            await axios.put(_processTransactionURL, _request).then((response) => {
+                console.log(response.data)
+            }).catch((error) => {
+                console.log(error)
+            })
+
+        }
+    },
+    mounted() {
+        axios.get(this.pendingTransactionsURL)
+            .then((response) => {
+                this.jsonData = response.data
+                console.log(this.jsonData)
+            })
+    }
+}
+</script>
+
+<template>
+    <div class="mb-10">
+        <Navbar></Navbar>
+    </div>
+    <div>
+        <h1 class="text-3xl font-bold mb-10">
+            <center>Checkout</center>
+        </h1>
+    </div>
+    <div>
+        <table class="ml-auto mr-auto mb-10">
+            <thead>
+                <tr class="font-bold">
+                    <td>ID</td>
+                    <td>UUID</td>
+                    <td>Account Number</td>
+                    <td>Username</td>
+                    <td>Description</td>
+                    <td>Credit/Debit</td>
+                    <td>Amount</td>
+                    <td>Status</td>
+                    <td>Balance</td>
+                    <td>IssuedBy</td>
+                    <td>CreatedAt</td>
+                </tr>
+            </thead>
+            <tbody v-if="jsonData['creditDebit']=='credit'">
+                <tr v-for="data in jsonData" :key="data">
+                    <td>{{ data['id'] }}</td>
+                    <td>{{ data['transaction_uuid'] }}</td>
+                    <td>{{ data['accountNumber'] }}</td>
+                    <td>{{ data['username'] }}</td>
+                    <td>{{ data['description'] }}</td>
+                    <td>{{ data['creditDebit'] }}</td>
+                    <td>{{ data['amount'] }}</td>
+                    <td>{{ data['status'] }}</td>
+                    <td>{{ data['balance'] }}</td>
+                    <td>{{ data['issuedBy'] }}</td>
+                    <td>{{ data['createdAt'] }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <section class="bg-white w-auto mx-60 my-30">
+        <div class="container m-auto max-w-4xl">
+            <div class="bg-white px-12 py-8 mb-8 shadow-md rounded-md border m-4 md:m-0">
+                <form @submit.prevent="processPayment">
+                    <h2 class="text-3l text-center font-semibold mb-6">{{ title }}</h2>
+                    <div class="mb-4 grid grid-cols-3 gap-3">
+                        <input type="text" v-model="checkoutForm.amountPaid" id="amountPaid" amountPaid="sale"
+                            class="border rounded w-full py-2 px-3 mb-2" placeholder="Amount paid" required>
+                        <input type="text" v-model="checkoutForm.subtotal" id="subtotal" name="subtotal"
+                            class="border rounded w-full py-2 px-3 mb-2" placeholder="Subtotal" required>
+                        <select v-model="checkoutForm.issuedBy" id="issuedBy" name="issuedBy"
+                            class="border rounded w-full py-2 px-3">
+                            <option v-for="i in issuers" :key="i">{{ i }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button
+                            class="bg-sky-500 hover:bg-sky-700 text-white font-bold py-4 px-4 rounded-full w-full focus:outline-none focus:shadow-outline"
+                            type="submit">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</template>
+
+<style>
+th,
+td {
+    padding-inline: 10px;
+}
+</style>
