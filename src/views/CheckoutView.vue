@@ -2,9 +2,10 @@
 import Navbar from '@/components/Navbar.vue';
 import { onMounted, reactive } from 'vue';
 import axios from 'axios';
+import Hero from '@/components/Hero.vue';
 
 export default {
-    components: { Navbar },
+    components: { Navbar, Hero },
     props: {
         title: {
             type: String,
@@ -14,6 +15,7 @@ export default {
     data() {
         return {
             jsonData: {},
+            creditDebit: null,
             pendingTransactionsURL: 'http://localhost:5000/api/transactions/pending',
             issuers: ['OK', 'Pick n Pay', 'Food Lovers', 'Choppies', 'Spar'],
             checkoutForm: reactive({
@@ -41,6 +43,7 @@ export default {
 
             await axios.put(_processTransactionURL, _request).then((response) => {
                 console.log(response.data)
+                location.reload()
             }).catch((error) => {
                 console.log(error)
             })
@@ -51,7 +54,7 @@ export default {
         axios.get(this.pendingTransactionsURL)
             .then((response) => {
                 this.jsonData = response.data
-                console.log(this.jsonData)
+                this.creditDebit = response.data[0]['creditDebit']
             })
     }
 }
@@ -61,12 +64,11 @@ export default {
     <div class="mb-10">
         <Navbar></Navbar>
     </div>
-    <div>
-        <h1 class="text-3xl font-bold mb-10">
-            <center>Checkout</center>
-        </h1>
+    <div class="mb-10">
+        <Hero title="Checkout"></Hero>
     </div>
     <div>
+        <!-- <p>{{ jsonData[0].creditDebit }}</p> -->
         <table class="ml-auto mr-auto mb-10">
             <thead>
                 <tr class="font-bold">
@@ -83,7 +85,7 @@ export default {
                     <td>CreatedAt</td>
                 </tr>
             </thead>
-            <tbody v-if="jsonData['creditDebit']=='credit'">
+            <tbody v-if="creditDebit=='credit'">
                 <tr v-for="data in jsonData" :key="data">
                     <td>{{ data['id'] }}</td>
                     <td>{{ data['transaction_uuid'] }}</td>
@@ -106,9 +108,9 @@ export default {
                 <form @submit.prevent="processPayment">
                     <h2 class="text-3l text-center font-semibold mb-6">{{ title }}</h2>
                     <div class="mb-4 grid grid-cols-3 gap-3">
-                        <input type="text" v-model="checkoutForm.amountPaid" id="amountPaid" amountPaid="sale"
+                        <input type="number" v-model="checkoutForm.amountPaid" id="amountPaid" amountPaid="sale"
                             class="border rounded w-full py-2 px-3 mb-2" placeholder="Amount paid" required>
-                        <input type="text" v-model="checkoutForm.subtotal" id="subtotal" name="subtotal"
+                        <input type="number" step=".01" v-model="checkoutForm.subtotal" id="subtotal" name="subtotal"
                             class="border rounded w-full py-2 px-3 mb-2" placeholder="Subtotal" required>
                         <select v-model="checkoutForm.issuedBy" id="issuedBy" name="issuedBy"
                             class="border rounded w-full py-2 px-3">

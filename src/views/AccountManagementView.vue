@@ -1,12 +1,13 @@
 <script setup>
 import Navbar from '@/components/Navbar.vue';
+import Hero from '@/components/Hero.vue';
 </script>
 
 <template>
   <div class="mb-10">
     <Navbar></Navbar>
   </div>
-  <div>
-    <h1><center>Account Management</center></h1>
+  <div class="mb-10">
+    <Hero title="Account Management"></Hero>
   </div>
 </template>

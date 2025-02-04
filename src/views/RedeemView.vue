@@ -1,10 +1,11 @@
 <script>
 import Navbar from '@/components/Navbar.vue';
+import Hero from '@/components/Hero.vue';
 import { onMounted, reactive } from 'vue';
 import axios from 'axios';
 
 export default {
-    components: { Navbar },
+    components: { Navbar, Hero },
     data() {
         return {
             jsonData: {},
@@ -52,10 +53,8 @@ export default {
     <div class="mb-10">
         <Navbar></Navbar>
     </div>
-    <div>
-        <h1 class="text-3xl font-bold mb-10">
-            <center>Redeem</center>
-        </h1>
+    <div class="mb-10">
+        <Hero title="Redeem"></Hero>
     </div>
     <div>
         <table class="ml-auto mr-auto mb-10">
@@ -74,7 +73,7 @@ export default {
                     <td>CreatedAt</td>
                 </tr>
             </thead>
-            <tbody>
+            <tbody v-if="jsonData[0]['creditDebit']=='debit'">
                 <tr v-for="data in jsonData" :key="data">
                     <td>{{ data['id'] }}</td>
                     <td>{{ data['transaction_uuid'] }}</td>
@@ -106,6 +105,9 @@ export default {
 </template>
 
 <style>
+input[type=number] {
+  -moz-appearance: textfield;
+}
 th,
 td {
     padding-inline: 10px;
