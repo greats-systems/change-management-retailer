@@ -10,6 +10,9 @@
           <RouterLink to="/redeem">Redeem</RouterLink>
         </div>
         <div class="menu-item">
+          <RouterLink to="/transactions">Transaction History</RouterLink>
+        </div>
+        <div class="menu-item">
             <RouterLink to="/account-management">Account Management</RouterLink>
         </div>
     </nav>

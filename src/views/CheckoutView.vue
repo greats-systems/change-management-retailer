@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar.vue';
 import { onMounted, reactive } from 'vue';
 import axios from 'axios';
 import Hero from '@/components/Hero.vue';
+// import { useToast } from 'vue-toastification'
 
 export default {
     components: { Navbar, Hero },
@@ -15,51 +16,110 @@ export default {
     data() {
         return {
             jsonData: {},
+            request: {},
             creditDebit: null,
             pendingTransactionsURL: 'http://localhost:5000/api/transactions/pending',
             issuers: ['OK', 'Pick n Pay', 'Food Lovers', 'Choppies', 'Spar'],
             checkoutForm: reactive({
                 amountPaid: null,
                 subtotal: null,
+                cashBack: null,
                 issuedBy: 'OK'
             })
         }
     },
     methods: {
-        async processPayment() {
-            const _processTransactionURL = 'http://localhost:5000/api/transactions/process'
-            // console.log(this.jsonData)
-            const _uuid = this.jsonData[0]['transaction_uuid']
-            const _oldBalance = this.jsonData[0]['balance']
-            const _creditDebit = this.jsonData[0]['creditDebit']
+        verify() {
+            const change = parseFloat(this.checkoutForm.amountPaid) - parseFloat(this.checkoutForm.subtotal)
+            var cashBack = parseFloat(Math.floor(change / 10) * 10).toFixed(2)
+            var depositAmount = (change - Math.floor(change / 10) * 10).toFixed(2)
+            if (change % 10 == 0) {
+                if (Math.floor(depositAmount) % 5 == 0) {
+                    cashBack = (Number(cashBack) + 5).toFixed(2)
+                    depositAmount = parseFloat(depositAmount - 5).toFixed(2)
+                }
+            }
+            else {
+                cashBack = change.toFixed(2) - (change % 5).toFixed(2)
+                depositAmount = (change % 5).toFixed(2)
+            }
+
             const _request = {
-                uuid: _uuid,
-                creditDebit: _creditDebit,
-                oldBalance: _oldBalance,
-                amount: (parseFloat(this.checkoutForm.amountPaid) - parseFloat(this.checkoutForm.subtotal)).toFixed(2),
+                change: change.toFixed(2),
+                cashBack: cashBack,
+                depositAmount: depositAmount,
                 issuedBy: this.checkoutForm.issuedBy
             }
-            // console.log(_request)
+            this.request = _request
+        },
+        async submit() {
+            // const toast = useToast()
+            const change = parseFloat(this.checkoutForm.amountPaid) - parseFloat(this.checkoutForm.subtotal)
+            var cashBack = parseFloat(Math.floor(change / 10) * 10).toFixed(2)
+            var depositAmount = (change - Math.floor(change / 10) * 10).toFixed(2)
+            const _processTransactionURL = 'http://localhost:5000/api/transactions/process'
 
-            await axios.put(_processTransactionURL, _request).then((response) => {
-                console.log(response.data)
-                location.reload()
-            }).catch((error) => {
-                console.log(error)
-            })
+            if (change % 10 == 0) {
+                if (Math.floor(depositAmount) % 5 == 0) {
+                    cashBack = (Number(cashBack) + 5).toFixed(2)
+                    depositAmount = parseFloat(depositAmount - 5).toFixed(2)
+                }
+            }
+            else {
+                cashBack = change.toFixed(2) - (change % 5).toFixed(2)
+                depositAmount = (change % 5).toFixed(2)
+            }
 
+            try {
+                const _uuid = this.jsonData[0]['transaction_uuid']
+                const _oldBalance = this.jsonData[0]['balance']
+                const _creditDebit = this.jsonData[0]['creditDebit']
+
+                const _request = {
+                    uuid: _uuid,
+                    creditDebit: _creditDebit,
+                    oldBalance: _oldBalance,
+                    amount: depositAmount,
+                    issuedBy: this.checkoutForm.issuedBy
+                }
+
+                await axios.put(_processTransactionURL, _request).then((response) => {
+                    console.log(response.data)
+                    // toast.success('Transaction processed successfully!')
+                    location.reload()
+                })
+            }
+            catch (e) {
+                if (e.name == 'TypeError') {
+                    // toast.warning('There are no pending transactions')
+                    console.log('There are no pending transactions')
+                } else {
+                    // toast.error('Failed to process transaction')
+                    console.log(`${e.name}\n${e.message}`)
+                }
+            }
         }
     },
     mounted() {
-        axios.get(this.pendingTransactionsURL, {timeout: 10000})
-            .then((response) => {
-                this.jsonData = response.data
-                console.log(this.jsonData)
-                if(response.data[0]!=null){
-                    this.creditDebit = response.data[0]['creditDebit']
-                }
-            })
+        this.request['change'] = 'Change'
+        this.request['cashBack'] = 'Cashback'
+        this.request['depositAmount'] = 'Deposit Amount'
+        try {
+            axios.get(this.pendingTransactionsURL, { timeout: 10000 })
+                .then((response) => {
+                    this.jsonData = response.data
+                    console.log(this.jsonData)
+                    if (response.data[0] != null) {
+                        this.creditDebit = response.data[0]['creditDebit']
+                    }
+                })
+        }
+        catch (e) {
+            console.log(e)
+        }
     }
+
+
 }
 </script>
 
@@ -88,7 +148,7 @@ export default {
                     <td>CreatedAt</td>
                 </tr>
             </thead>
-            <tbody v-if="creditDebit=='credit'">
+            <tbody v-if="creditDebit == 'credit'">
                 <tr v-for="data in jsonData" :key="data">
                     <td>{{ data['id'] }}</td>
                     <td>{{ data['transaction_uuid'] }}</td>
@@ -108,7 +168,7 @@ export default {
     <section class="bg-white w-auto mx-60 my-30">
         <div class="container m-auto max-w-4xl">
             <div class="bg-white px-12 py-8 mb-8 shadow-md rounded-md border m-4 md:m-0">
-                <form @submit.prevent="processPayment">
+                <div>
                     <h2 class="text-3l text-center font-semibold mb-6">{{ title }}</h2>
                     <div class="mb-4 grid grid-cols-3 gap-3">
                         <input type="number" v-model="checkoutForm.amountPaid" id="amountPaid" amountPaid="sale"
@@ -120,12 +180,20 @@ export default {
                             <option v-for="i in issuers" :key="i">{{ i }}</option>
                         </select>
                     </div>
-                    <div>
-                        <button
-                            class="bg-sky-500 hover:bg-sky-700 text-white font-bold py-4 px-4 rounded-full w-full focus:outline-none focus:shadow-outline"
+                    <div class="mb-4 grid grid-cols-3 gap-3">
+                        <output>{{ request['change'] }}</output>
+                        <output>{{ request['cashBack'] }}</output>
+                        <output>{{ request['depositAmount'] }}</output>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button @click="verify"
+                            class="bg-yellow-300 hover:bg-yellow-500 text-white font-bold py-4 px-4 rounded-full w-full focus:outline-none focus:shadow-outline"
+                            type="submit">Verify</button>
+                        <button @click="submit"
+                            class="bg-green-500 hover:bg-green-700 text-white font-bold py-4 px-4 rounded-full w-full focus:outline-none focus:shadow-outline"
                             type="submit">Submit</button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </section>

@@ -75,7 +75,6 @@ export default {
                     <td>ID</td>
                     <td>UUID</td>
                     <td>Account Number</td>
-                    <td>Username</td>
                     <td>Description</td>
                     <td>Credit/Debit</td>
                     <td>Amount</td>
@@ -90,7 +89,6 @@ export default {
                     <td>{{ data['id'] }}</td>
                     <td>{{ data['transaction_uuid'] }}</td>
                     <td>{{ data['accountNumber'] }}</td>
-                    <td>{{ data['username'] }}</td>
                     <td>{{ data['description'] }}</td>
                     <td>{{ data['creditDebit'] }}</td>
                     <td>{{ data['amount'] }}</td>
