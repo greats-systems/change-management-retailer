@@ -8,16 +8,15 @@ export default {
     components: { Navbar, Hero },
     data() {
         return {
+            ready: false,
             jsonData: {},
             pendingTransactionsURL: 'http://localhost:5000/api/transactions/pending',
-            // issuers: ['OK', 'Pick n Pay', 'Food Lovers', 'Choppies', 'Spar'],
         }
     },
     methods: {
         async accept() {
-            console.log('Accepted')            
+            console.log('Accepted')
             const _processTransactionURL = 'http://localhost:5000/api/transactions/process'
-            // console.log(this.jsonData)
             const _request = {
                 uuid: this.jsonData[0]['transaction_uuid'],
                 creditDebit: this.jsonData[0]['creditDebit'],
@@ -25,25 +24,36 @@ export default {
                 amount: this.jsonData[0]['amount'],
                 issuedBy: this.jsonData[0]['issuedBy']
             }
-            // console.log(_request)
 
-            await axios.put(_processTransactionURL, _request).then((response) => {
+            await axios.put(_processTransactionURL, _request, { timeout: 10000 }).then((response) => {
                 console.log(response.data)
+                location.reload()
             }).catch((error) => {
                 console.log(error)
             })
-            
+
         },
 
-        async reject(){
+        async reject() {
             console.log('Rejected')
         }
     },
-    mounted() {
-        axios.get(this.pendingTransactionsURL)
+    async mounted() {
+        await axios.get(this.pendingTransactionsURL)
             .then((response) => {
-                this.jsonData = response.data
-                console.log(this.jsonData)
+                if (response.data != null) {
+                    this.jsonData = response.data
+                    if (this.jsonData[0] != null) {
+                        console.log(`Data: ${this.jsonData}`)
+                        this.creditDebit = this.jsonData[0]['creditDebit']
+                        console.log(this.creditDebit)
+                        this.ready=true
+                    }
+                }
+                // this.creditDebit = response.data[0]['creditDebit']
+
+            }).catch((error) => {
+                console.log(error)
             })
     }
 }
@@ -53,9 +63,11 @@ export default {
     <div class="mb-10">
         <Navbar></Navbar>
     </div>
+
     <div class="mb-10">
         <Hero title="Redeem"></Hero>
     </div>
+    {{ }}
     <div>
         <table class="ml-auto mr-auto mb-10">
             <thead>
@@ -73,7 +85,7 @@ export default {
                     <td>CreatedAt</td>
                 </tr>
             </thead>
-            <tbody v-if="jsonData[0]['creditDebit']=='debit'">
+            <tbody v-if="ready && creditDebit == 'debit'">
                 <tr v-for="data in jsonData" :key="data">
                     <td>{{ data['id'] }}</td>
                     <td>{{ data['transaction_uuid'] }}</td>
@@ -98,16 +110,19 @@ export default {
             <button
             class="bg-red-500 hover:bg-red-700 text-white font-bold rounded-full focus:outline-none focus:shadow-outline"
             >Decline</button> -->
-        <button @click="accept" class="bg-green-500 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-full">Accept</button>
-        <button @click="reject" class="bg-red-500 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-full">Decline</button>
+        <button @click="accept"
+            class="bg-green-500 hover:bg-green-700 text-white font-bold py-4 px-12 rounded-full">Accept</button>
+        <button @click="reject"
+            class="bg-red-500 hover:bg-red-700 text-white font-bold py-4 px-12 rounded-full">Decline</button>
     </div>
     <!-- </section> -->
 </template>
 
 <style>
 input[type=number] {
-  -moz-appearance: textfield;
+    -moz-appearance: textfield;
 }
+
 th,
 td {
     padding-inline: 10px;

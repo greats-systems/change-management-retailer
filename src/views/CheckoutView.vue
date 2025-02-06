@@ -51,10 +51,13 @@ export default {
         }
     },
     mounted() {
-        axios.get(this.pendingTransactionsURL)
+        axios.get(this.pendingTransactionsURL, {timeout: 10000})
             .then((response) => {
                 this.jsonData = response.data
-                this.creditDebit = response.data[0]['creditDebit']
+                console.log(this.jsonData)
+                if(response.data[0]!=null){
+                    this.creditDebit = response.data[0]['creditDebit']
+                }
             })
     }
 }
