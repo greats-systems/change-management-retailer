@@ -36,7 +36,7 @@ export default {
       })
     },
 
-    clear(){
+    clear() {
       this.form.retailerName = null
       this.found = false
     }
@@ -58,16 +58,19 @@ export default {
   <div class="mb-10">
     <Hero title="Transaction History"></Hero>
   </div>
-  <div class="mb-10">
-    <center>
-      <div>
-        <input class="py-2 px-4" type="text" v-model="form.retailerName" id="name" name="name"
-          placeholder="Retailer name" required>
-        <button @click="search" class="ml-5 bg-sky-300 hover:bg-sky-600 text-white rounded py-2 px-4" type="submit">Search</button>
-        <button @click="clear" class="ml-5 bg-sky-300 hover:bg-sky-600 text-white rounded py-2 px-4" type="submit">Clear</button>
-      </div>
-    </center>
-  </div>
+  <section class="bg-white w-auto mx-60 my-30">
+    <div class="mb-5 flex justify-center">
+      <input class="py-2 px-6 border rounded" type="text" v-model="form.retailerName" id="name" name="name"
+        placeholder="Retailer name" required>
+    </div>
+    <div class="flex justify-center space-x-4">
+      <button @click="search"
+        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full">Search</button>
+      <button @click="clear"
+        class="bg-yellow-300 hover:bg-yellow-500 text-white font-bold py-2 px-6 rounded-full focus:outline-none focus:shadow-outline"
+        type="submit">Clear</button>
+    </div>
+  </section>
   <div v-if="found == true">
     <table class="ml-auto mr-auto mb-10">
       <thead>

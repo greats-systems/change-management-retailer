@@ -46,7 +46,7 @@ export default {
 
             const _request = {
                 change: change.toFixed(2),
-                cashBack: cashBack,
+                cashBack: parseFloat(cashBack).toFixed(2),
                 depositAmount: depositAmount,
                 issuedBy: this.checkoutForm.issuedBy
             }
@@ -80,6 +80,7 @@ export default {
                     creditDebit: _creditDebit,
                     oldBalance: _oldBalance,
                     amount: depositAmount,
+                    cashBackAmount: cashBack,
                     issuedBy: this.checkoutForm.issuedBy
                 }
 

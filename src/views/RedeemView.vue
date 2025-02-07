@@ -1,7 +1,6 @@
 <script>
 import Navbar from '@/components/Navbar.vue';
 import Hero from '@/components/Hero.vue';
-import { onMounted, reactive } from 'vue';
 import axios from 'axios';
 
 export default {
@@ -21,6 +20,7 @@ export default {
                 uuid: this.jsonData[0]['transaction_uuid'],
                 creditDebit: this.jsonData[0]['creditDebit'],
                 oldBalance: this.jsonData[0]['balance'],
+                cashBackAmount: 0,
                 amount: this.jsonData[0]['amount'],
                 issuedBy: this.jsonData[0]['issuedBy']
             }
