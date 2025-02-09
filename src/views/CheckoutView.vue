@@ -24,7 +24,8 @@ export default {
                 amountPaid: null,
                 subtotal: null,
                 cashBack: null,
-                issuedBy: 'OK'
+                issuedBy: 'OK',
+                location: null
             })
         }
     },
@@ -81,7 +82,7 @@ export default {
                     oldBalance: _oldBalance,
                     amount: depositAmount,
                     cashBackAmount: cashBack,
-                    issuedBy: this.checkoutForm.issuedBy
+                    issuedBy: `${this.checkoutForm.issuedBy} ${this.checkoutForm.location}`
                 }
 
                 await axios.put(_processTransactionURL, _request).then((response) => {
@@ -171,17 +172,21 @@ export default {
             <div class="bg-white px-12 py-8 mb-8 shadow-md rounded-md border m-4 md:m-0">
                 <div>
                     <h2 class="text-3l text-center font-semibold mb-6">{{ title }}</h2>
-                    <div class="mb-4 grid grid-cols-3 gap-3">
+                    <div class="mb-4 grid grid-cols-2 gap-2">
                         <input type="number" v-model="checkoutForm.amountPaid" id="amountPaid" amountPaid="sale"
                             class="border rounded w-full py-2 px-3 mb-2" placeholder="Amount paid" required>
                         <input type="number" step=".01" v-model="checkoutForm.subtotal" id="subtotal" name="subtotal"
                             class="border rounded w-full py-2 px-3 mb-2" placeholder="Subtotal" required>
+                    </div>
+                    <div class="mb-4 grid grid-cols-2 gap-2">
                         <select v-model="checkoutForm.issuedBy" id="issuedBy" name="issuedBy"
                             class="border rounded w-full py-2 px-3">
                             <option v-for="i in issuers" :key="i">{{ i }}</option>
                         </select>
+                        <input type="text" v-model="checkoutForm.location" id="location" name="location"
+                            class="border rounded w-full py-2 px-3 mb-2" placeholder="Location" required>
                     </div>
-                    <div class="mb-4 grid grid-cols-3 gap-3">
+                    <div class="mb-10 mt-10 grid grid-cols-2 gap-2">
                         <output>{{ request['change'] }}</output>
                         <output>{{ request['cashBack'] }}</output>
                         <output>{{ request['depositAmount'] }}</output>

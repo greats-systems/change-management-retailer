@@ -25,12 +25,12 @@ export default {
         }
       }
       this.request = _request
-      const url = `${this.root}/${this.form.retailerName}`
+      const url = `${this.root}`
       console.log(`${url}\n${_request}`)
       await axios.get(url, _request).then((response) => {
-        this.jsonData = response.data.data
-        console.log(response.data)
+        this.jsonData = response.data
         this.found = true
+        console.log(this.jsonData)
       }).catch((error) => {
         console.log(error)
       })
@@ -71,14 +71,14 @@ export default {
         type="submit">Clear</button>
     </div>
   </section>
-  <div v-if="found == true">
+  <div v-if="found==true" class="mt-10">
     <table class="ml-auto mr-auto mb-10">
       <thead>
         <tr class="font-bold">
-          <!-- <td>ID</td>
-          <td>UUID</td> -->
+          <td>ID</td>
+          <td>UUID</td>
           <td>Account Number</td>
-          <!-- <td>Username</td> -->
+          <td>Username</td>
           <td>Description</td>
           <td>Credit/Debit</td>
           <td>Amount</td>
@@ -90,22 +90,22 @@ export default {
       </thead>
       <tbody>
         <tr v-for="data in jsonData" :key="data">
-          <!-- <td>{{ data['id'] }}</td>
-          <td>{{ data['transaction_uuid'] }}</td> -->
+          <td>{{ data['id'] }}</td>
+          <td>{{ data['transaction_uuid'] }}</td>
           <td>{{ data['accountNumber'] }}</td>
-          <!-- <td>{{ data['username'] }}</td> -->
+          <td>{{ data['username'] }}</td>
           <td>{{ data['description'] }}</td>
           <td>{{ data['creditDebit'] }}</td>
-          <td>{{ data['amount'].toFixed(2) }}</td>
+          <td align="right">{{ data['amount'].toFixed(2) }}</td>
           <td>{{ data['status'] }}</td>
-          <td>{{ data['balance'].toFixed(2) }}</td>
+          <td align="right">{{ data['balance'].toFixed(2) }}</td>
           <td>{{ data['issuedBy'] }}</td>
           <td>{{ data['createdAt'] }}</td>
         </tr>
       </tbody>
     </table>
   </div>
-  <div v-else>
+  <div v-else class="mt-10">
     <center>No data</center>
   </div>
 </template>
