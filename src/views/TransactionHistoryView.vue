@@ -25,7 +25,7 @@ export default {
         }
       }
       this.request = _request
-      const url = `${this.root}`
+      const url = `${this.root}/${this.form.retailerName}`
       console.log(`${url}\n${_request}`)
       await axios.get(url, _request).then((response) => {
         this.jsonData = response.data
